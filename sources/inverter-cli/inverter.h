@@ -19,6 +19,7 @@ class cInverter {
 
     void SetMode(char newmode);
     bool CheckCRC(unsigned char *buff, int len);
+    void printBufferAsHex(const unsigned char* buffer, size_t length);
     bool query(const char *cmd, int replysize);
     uint16_t cal_crc_half(uint8_t *pin, uint8_t len);
 

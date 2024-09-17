@@ -135,13 +135,15 @@ bool cInverter::query(const char *cmd, int replysize) {
 
         lprintf("INVERTER: %s reply size (%d bytes)", cmd, i);
 
-        if (buf[0]!='(' || buf[replysize-1]!=0x0d) {
+        if (buf[0]!='(' || buf[replysize-1]!=0x0a) {
             lprintf("INVERTER: %s: incorrect start/stop bytes.  Buffer: %s", cmd, buf);
             return false;
         }
-        if (!(CheckCRC(buf, replysize))) {
+	if (!(CheckCRC(buf, replysize))) {
             lprintf("INVERTER: %s: CRC Failed!  Reply size: %d  Buffer: %s", cmd, replysize, buf);
-            return false;
+            uint16_t crc = cal_crc_half(buf, replysize-3);
+            lprintf("CRC Expected %02X %02X, but we got %02X %02X\n",crc>>8,crc&0xff,buf[replysize-3],buf[replysize-2]);
+            printBufferAsHex(buf, replysize);
         }
 
         buf[i-3] = '\0'; //nullterminating on first CRC byte
@@ -254,4 +256,10 @@ uint16_t cInverter::cal_crc_half(uint8_t *pin, uint8_t len) {
 bool cInverter::CheckCRC(unsigned char *data, int len) {
     uint16_t crc = cal_crc_half(data, len-3);
     return data[len-3]==(crc>>8) && data[len-2]==(crc&0xff);
+}
+void cInverter::printBufferAsHex(const unsigned char* buffer, size_t length) {
+    for (size_t i = 0; i < length; ++i) {
+        lprintf("%02X ", buffer[i]);
+    }
+    lprintf("\n");
 }
